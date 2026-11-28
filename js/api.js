@@ -94,7 +94,11 @@ const BASE_URL = 'https://jsonplaceholder.typicode.com'
 const TIMEOUT_MS = 8000;
 
 async function request(path){
-   
+   const contreller = new AbortController()
+   const signal = contreller.signal
+   const timeoutId = setTimeout(() => {
+    contreller.abort()
+   },TIMEOUT_MS)
     
     try{
 
@@ -106,7 +110,7 @@ async function request(path){
             }
         }
 
-        const response = await fetch(BASE_URL + path)
+        const response = await fetch(BASE_URL + path, {signal})
         if(!response.ok){
             throw { 
                 type: 'http', 
@@ -119,7 +123,23 @@ async function request(path){
         return data
     }
     catch (err) {
+
+        if(err.name === 'AbortError'){
+            throw {
+                type: 'timeout',
+                status: null,
+                message: "La récupération prend énormément de temps."
+
+            }
+        }
+        else{
+            console.error('Something went wrong:', err);
+        }
+
         throw err
+    }
+    finally{
+        clearTimeout(timeoutId)
     }
 }
 console.log(await request('/posts/2'));
