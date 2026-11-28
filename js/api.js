@@ -87,3 +87,39 @@ export async function getMetalPrice(currency = "MAD") {
         return null;
     }
 }
+
+
+
+const BASE_URL = 'https://jsonplaceholder.typicode.com'
+const TIMEOUT_MS = 8000;
+
+async function request(path){
+   
+    
+    try{
+
+        if(!navigator.onLine){
+            throw {
+                type: 'oflline',
+                status: null,
+                message: "Vous êtes hors-ligne."
+            }
+        }
+
+        const response = await fetch(BASE_URL + path)
+        if(!response.ok){
+            throw { 
+                type: 'http', 
+                status: response.status, 
+                message: `Error: ${response.status}` 
+            }
+        }
+
+        const data = await response.json()
+        return data
+    }
+    catch (err) {
+        throw err
+    }
+}
+console.log(await request('/posts/2'));
