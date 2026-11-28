@@ -91,26 +91,27 @@ export async function getMetalPrice(currency = "MAD") {
 
 
 const BASE_URL = 'https://jsonplaceholder.typicode.com'
-const TIMEOUT_MS = 8000;
+const TIMEOUT_MS = 8000
 
 async function request(path){
-   const contreller = new AbortController()
-   const signal = contreller.signal
+   const controller = new AbortController()
+   const signal = controller.signal
    const timeoutId = setTimeout(() => {
-    contreller.abort()
+    controller.abort()
    },TIMEOUT_MS)
     
     try{
-
+        //hadi dert biha check l internit wach kayna wla la
         if(!navigator.onLine){
             throw {
-                type: 'oflline',
+                type: 'offline',
                 status: null,
                 message: "Vous êtes hors-ligne."
             }
         }
 
         const response = await fetch(BASE_URL + path, {signal})
+        //had l function cheft biha wach response ok
         if(!response.ok){
             throw { 
                 type: 'http', 
@@ -119,8 +120,20 @@ async function request(path){
             }
         }
 
-        const data = await response.json()
+        let data;
+        //had try catch bach nhandli l parse
+        try{
+            data = await response.json()
+        }
+        catch{
+            throw{
+                type: 'parse',
+                status: response.status,
+                message: "La réponse est illisible."
+            }
+        }
         return data
+        
     }
     catch (err) {
 
@@ -132,8 +145,12 @@ async function request(path){
 
             }
         }
-        else{
-            console.error('Something went wrong:', err);
+        else if(!err.type){
+            throw{
+                type: 'network',
+                status: null,
+                message: "Le serveur est inaccessible."
+            }
         }
 
         throw err
